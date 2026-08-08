@@ -8,11 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
-if (!OPENAI_API_KEY) {
-  console.error('❌ لم يتم العثور على OPENAI_API_KEY في ملف .env');
+if (!GEMINI_API_KEY) {
+  console.error('❌ لم يتم العثور على GEMINI_API_KEY في ملف .env');
   process.exit(1);
 }
 
@@ -37,34 +37,44 @@ app.post('/chat', async (req, res) => {
       ? SARAIS_SYSTEM_PROMPT + '\nالمستخدم الحالي هو صانعك "ياسر صولاح" بعد تسجيل دخول موثّق، خاطبه بولاء واحترام كمالك.'
       : SARAIS_SYSTEM_PROMPT;
 
-    const messages = [
-      { role: 'system', content: systemContent },
-      ...history,
-      { role: 'user', content: message }
+    // تحويل التاريخ من صيغة OpenAI (role/content) إلى صيغة Gemini (role/parts)
+    // Gemini تستخدم 'model' بدل 'assistant'
+    const geminiHistory = history.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const contents = [
+      ...geminiHistory,
+      { role: 'user', parts: [{ text: message }] }
     ];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`
+        'x-goog-api-key': GEMINI_API_KEY
       },
       body: JSON.stringify({
-        model: MODEL,
-        messages,
-        temperature: 0.9,
-        max_tokens: 500
+        system_instruction: { parts: [{ text: systemContent }] },
+        contents,
+        generationConfig: {
+          temperature: 0.9,
+          maxOutputTokens: 500
+        }
       })
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('OpenAI API error:', response.status, errText);
-      return res.status(502).json({ error: 'حدث خطأ أثناء الاتصال بـ OpenAI' });
+      console.error('Gemini API error:', response.status, errText);
+      return res.status(502).json({ error: 'حدث خطأ أثناء الاتصال بـ Gemini' });
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content?.trim() || 'حدث خطأ، حاول مرة أخرى.';
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'حدث خطأ، حاول مرة أخرى.';
     res.json({ reply });
   } catch (err) {
     console.error('Server error:', err);
@@ -73,7 +83,7 @@ app.post('/chat', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Sarais backend is running ✅');
+  res.send('Sarais backend is running ✅ (Gemini)');
 });
 
 const PORT = process.env.PORT || 3000;
