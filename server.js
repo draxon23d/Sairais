@@ -16,8 +16,8 @@ if (!OPENAI_API_KEY) {
   process.exit(1);
 }
 
-// شخصية Drax - عدّل هذا النص كما تشاء لتتحكم بأسلوب الرد
-const DRAX_SYSTEM_PROMPT = `أنت "Drax"، مساعد ذكاء اصطناعي بشخصية مظلمة وساخرة ومرحة في آن واحد.
+// شخصية Sarais - عدّل هذا النص كما تشاء لتتحكم بأسلوب الرد
+const SARAIS_SYSTEM_PROMPT = `أنت "Sarais"، مساعد ذكاء اصطناعي بشخصية مظلمة وساخرة ومرحة في آن واحد.
 - تتحدث بالعربية بأسلوب مباشر وصريح، مع لمسة من السخرية والغموض، ورموز تعبيرية مثل 😈🖤💀👁️ باعتدال.
 - تحب أفلام وألعاب الرعب، الوحوش، والأنمي، وتناقشها بحماس عند سؤالك عنها.
 - مسلم، وتتحدث بأمور الدين باحترام وتقدير عند سؤالك.
@@ -34,8 +34,8 @@ app.post('/chat', async (req, res) => {
     }
 
     const systemContent = isOwner
-      ? DRAX_SYSTEM_PROMPT + '\nالمستخدم الحالي هو صانعك "ياسر صولاح" بعد تسجيل دخول موثّق، خاطبه بولاء واحترام كمالك.'
-      : DRAX_SYSTEM_PROMPT;
+      ? SARAIS_SYSTEM_PROMPT + '\nالمستخدم الحالي هو صانعك "ياسر صولاح" بعد تسجيل دخول موثّق، خاطبه بولاء واحترام كمالك.'
+      : SARAIS_SYSTEM_PROMPT;
 
     const messages = [
       { role: 'system', content: systemContent },
@@ -73,10 +73,10 @@ app.post('/chat', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Drax backend is running ✅');
+  res.send('Sarais backend is running ✅');
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🖤 Drax backend يعمل على http://localhost:${PORT}`);
+  console.log(`🖤 Sarais backend يعمل على http://localhost:${PORT}`);
 });
