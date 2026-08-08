@@ -476,6 +476,382 @@ function showTyping(){
   if(statusEl) statusEl.textContent = thinkingMessages[0];
   typingInterval = setInterval(() => {
     msgIndex++;
+    con#tool-panel textarea, #tool-panel input[type="text"], #tool-panel select {
+  width:100%; padding:12px; background:#1a1a2e; border:1px solid #2a2a4a;
+  border-radius:8px; color:#fff; outline:none; margin-bottom:10px; resize:none;
+}
+#tool-panel button {
+  padding:10px 20px; background:#8a2be2; border:none; border-radius:8px;
+  color:#fff; cursor:pointer; font-weight:600;
+}
+.tool-back { background:none; border:none; color:#fff; font-size:18px; cursor:pointer; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+
+#chat-area {
+  flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;
+  background:#0a0a0a; scroll-behavior:smooth;
+}
+.welcome-msg {
+  align-self:center; background:#1a1a2e; padding:12px 18px; border-radius:14px;
+  color:#aaa; font-size:13px; text-align:center; max-width:90%; line-height:1.7;
+}
+.msg-user {
+  align-self:flex-start; background:linear-gradient(135deg,#8a2be2,#4a0080);
+  color:#fff; padding:10px 14px; border-radius:16px 16px 16px 4px;
+  max-width:80%; font-size:14px; line-height:1.6; word-wrap:break-word; animation:popIn 0.3s ease;
+}
+.msg-sarais {
+  align-self:flex-end; background:#1a1a2e; color:#e0e0e0; padding:10px 14px;
+  border-radius:16px 16px 4px 16px; max-width:80%; font-size:14px; line-height:1.6;
+  word-wrap:break-word; border-right:3px solid #8a2be2; animation:popIn 0.3s ease;
+}
+.msg-sarais.owner { border-right-color:#ffd700; color:#ffd700; }
+.msg-sarais.angry { border-right-color:#ff0040; }
+.msg-sarais.happy { border-right-color:#00ff88; }
+
+.typing-box {
+  align-self:flex-end; background:#1a1a2e; padding:10px 16px; border-radius:16px 16px 4px 16px;
+  display:flex; gap:5px; align-items:center; border-right:3px solid #8a2be2;
+}
+.typing-dot { width:6px; height:6px; background:#8a2be2; border-radius:50%; animation:typing 1.4s infinite both; }
+.typing-dot:nth-child(2) { animation-delay:0.2s; }
+.typing-dot:nth-child(3) { animation-delay:0.4s; }
+
+#input-area {
+  padding:12px 16px; background:#0f0f1a; border-top:1px solid #2a2a4a;
+  display:flex; gap:8px; align-items:center; flex-shrink:0;
+}
+#input-area button { background:none; border:none; color:#8a2be2; font-size:22px; cursor:pointer; }
+#msg-input {
+  flex:1; padding:10px 14px; background:#1a1a2e; border:1px solid #2a2a4a;
+  border-radius:20px; color:#fff; outline:none; font-size:14px;
+}
+#send-btn {
+  width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg,#8a2be2,#4a0080); border:none;
+  color:#fff; font-size:18px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; flex-shrink:0;
+}
+
+#menu-overlay {
+  display:none; position:absolute; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.6); z-index:15;
+}
+#menu-overlay.show { display:block; }
+
+#jumpscare {
+  display:none; position:absolute; top:0; left:0; width:100%; height:100%;
+  background:#000; z-index:100; align-items:center; justify-content:center;
+  flex-direction:column; text-align:center;
+}
+.jumpscare-eyes {
+  width:180px; height:180px; background:radial-gradient(circle,#ff0040,#000);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  animation:pulse 0.25s infinite; margin-bottom:30px;
+}
+.jumpscare-eyes-inner { display:flex; gap:25px; }
+.j-eye { width:35px; height:45px; background:#fff; border-radius:50%; box-shadow:0 0 30px #ff0040; }
+.j-text { color:#ff0040; font-size:26px; font-weight:900; font-family:monospace; text-shadow:0 0 20px #ff0040; }
+.j-sub { color:#666; font-size:13px; margin-top:10px; }
+
+#ban-overlay {
+  display:none; position:absolute; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.95); z-index:90; align-items:center; justify-content:center;
+  flex-direction:column; text-align:center; padding:20px;
+}
+.ban-text { color:#ff0040; font-size:22px; font-weight:900; margin-bottom:10px; }
+.ban-timer { color:#888; font-size:14px; }
+
+@keyframes popIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+@keyframes typing { 0%,80%,100%{transform:scale(0);} 40%{transform:scale(1);} }
+@keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.3);} 100%{transform:scale(1);} }
+@keyframes shake { 0%{transform:translateX(0);} 25%{transform:translateX(-6px);} 50%{transform:translateX(6px);} 75%{transform:translateX(-6px);} 100%{transform:translateX(0);} }
+
+.monster-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px; }
+.monster-card { background:#1a1a2e; padding:14px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s; border:1px solid transparent; }
+.monster-card:hover { border-color:#8a2be2; transform:scale(1.03); }
+.monster-card .icon { font-size:32px; margin-bottom:6px; }
+.monster-card .name { color:#fff; font-size:12px; }
+
+.code-langs { display:flex; gap:8px; margin:10px 0; }
+.code-langs button { flex:1; padding:10px; background:#1a1a2e; border:1px solid #2a2a4a; border-radius:8px; color:#fff; cursor:pointer; font-size:12px; }
+.code-langs button:hover { border-color:#8a2be2; }
+
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#2a2a4a; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<div id="sarais-app">
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div id="sarais-avatar">
+      <div id="eye-left" class="eye"></div>
+      <div id="eye-right" class="eye"></div>
+      <div id="mouth"></div>
+    </div>
+    <div>
+      <div class="header-name">Sarais</div>
+      <div id="status">● متصل</div>
+    </div>
+  </div>
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+</div>
+
+<!-- Side Menu -->
+<div id="side-menu">
+  <button class="menu-close" onclick="toggleMenu()">✕</button>
+  <div class="menu-section">
+    <div class="menu-title">📁 المحادثات</div>
+    <div id="chat-list">
+      <div class="menu-item active" onclick="newChat()">💬 محادثة جديدة</div>
+    </div>
+  </div>
+  <div class="menu-section">
+    <div class="menu-title">🛠️ الأدوات</div>
+    <div class="menu-item" onclick="openTool('image')">🖼️ صانع الصور</div>
+    <div class="menu-item" onclick="openTool('video')">🎬 صانع الفيديو</div>
+    <div class="menu-item" onclick="openTool('learn')">📚 هيا لنتعلم</div>
+    <div class="menu-item" onclick="openTool('code')">💻 مبرمج الأكواد</div>
+    <div class="menu-item" onclick="openTool('library')">👹 مكتبة الوحوش</div>
+  </div>
+  <div class="menu-section">
+    <div class="menu-title">⚙️ الإعدادات</div>
+    <div class="menu-item" onclick="toggleLogin()">🔐 تسجيل الدخول</div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="login-modal">
+  <div class="login-box">
+    <h3>🔐 تسجيل الدخول</h3>
+    <input id="email-input" type="email" placeholder="بريدك الإلكتروني">
+    <input type="password" placeholder="كلمة المرور">
+    <button onclick="doLogin()">دخول</button>
+    <p id="login-msg"></p>
+  </div>
+</div>
+
+<!-- Tool Panel -->
+<div id="tool-panel">
+  <button class="tool-back" onclick="closeTool()">← رجوع</button>
+  <div id="tool-content"></div>
+</div>
+
+<!-- Chat Area -->
+<div id="chat-area">
+  <div class="welcome-msg">
+    👋 مرحباً! أنا <b style="color:#8a2be2;">Sarais</b>. مساعدك الذكي المظلم والمرح.<br>
+    اسألني ما تشاء... لكن احذر، مزاحي قاسٍ 😈<br><br>
+    <span style="font-size:11px;color:#666;">جرب تسجيل الدخول ببريدك الخاص لترى المفاجأة! 👑</span>
+  </div>
+</div>
+
+<!-- Input Area -->
+<div id="input-area">
+  <button onclick="document.getElementById('file-input').click()">📎</button>
+  <input id="file-input" type="file" style="display:none;" accept="image/*,video/*" onchange="handleFile(this)">
+  <input id="msg-input" type="text" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter')sendMsg()">
+  <button id="send-btn" onclick="sendMsg()">➤</button>
+</div>
+
+<!-- Overlays -->
+<div id="menu-overlay" onclick="toggleMenu()"></div>
+
+<div id="jumpscare">
+  <div class="jumpscare-eyes">
+    <div class="jumpscare-eyes-inner">
+      <div class="j-eye"></div>
+      <div class="j-eye"></div>
+    </div>
+  </div>
+  <div class="j-text">سئمت منك أيها البشري!</div>
+  <div class="j-sub">تم الحظر لمدة 6 ساعات 😈</div>
+</div>
+
+<div id="ban-overlay">
+  <div class="ban-text">⛔ تم الحظر!</div>
+  <div class="ban-timer">لا تستطيع التحدث مع Sarais الآن.<br>انتظر 6 ساعات...</div>
+</div>
+
+</div>
+
+<script>
+let isOwner = false;
+let angerLevel = 0;
+let isBanned = false;
+let banEndTime = null;
+let chatHistory = [];
+let currentChatId = 0;
+let imageCount = 0;
+let chatCounter = 1;
+let typingInterval = null;
+
+// --- UI Functions ---
+function toggleMenu(){
+  const menu = document.getElementById('side-menu');
+  const overlay = document.getElementById('menu-overlay');
+  menu.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+
+function toggleLogin(){
+  document.getElementById('login-modal').style.display = 'flex';
+  toggleMenu();
+}
+
+function closeLogin(){
+  document.getElementById('login-modal').style.display = 'none';
+}
+
+function openTool(type){
+  const panel = document.getElementById('tool-panel');
+  const content = document.getElementById('tool-content');
+  panel.style.display = 'block';
+  toggleMenu();
+  renderTool(type, content);
+}
+
+function closeTool(){
+  document.getElementById('tool-panel').style.display = 'none';
+}
+
+function renderTool(type, el){
+  if(type === 'image'){
+    el.innerHTML = `
+      <h2>🖼️ صانع الصور</h2>
+      <p>أدخل وصف الصورة التي تريدها:</p>
+      <textarea id="img-prompt" rows="4" placeholder="مثال: تنين أسود يتنفس ناراً في سماء مظلمة..."></textarea>
+      <div style="margin-top:8px;color:#888;font-size:12px;">متبقي اليوم: <span id="img-count">${15-imageCount}</span>/15</div>
+      <button onclick="generateImage()" style="margin-top:12px;">✨ إنشاء الصورة</button>
+      <div id="img-result" style="margin-top:20px;"></div>
+    `;
+  } else if(type === 'video'){
+    el.innerHTML = `
+      <h2>🎬 صانع الفيديو</h2>
+      <p>وصف الفيديو:</p>
+      <textarea rows="4" placeholder="صف المشهد الذي تريده..."></textarea>
+      <p style="margin-top:10px;">الجودة:</p>
+      <select><option>4K Ultra HD</option><option>1080p Full HD</option><option>720p HD</option></select>
+      <p style="margin-top:10px;">المدة:</p>
+      <select><option>5 ثوانٍ</option><option>10 ثوانٍ</option><option>30 ثانية</option><option>1 دقيقة</option></select>
+      <button style="margin-top:12px;">🎬 إنشاء الفيديو</button>
+    `;
+  } else if(type === 'learn'){
+    el.innerHTML = `
+      <h2>📚 هيا لنتعلم</h2>
+      <p>ماذا تريد أن تتعلم اليوم؟</p>
+      <input type="text" placeholder="مثال: البرمجة، الفيزياء، اللغات...">
+      <button style="margin-top:10px;">📖 ابدأ الدرس</button>
+      <div style="margin-top:25px;padding:18px;background:#1a1a2e;border-radius:12px;">
+        <div style="color:#8a2be2;font-weight:700;margin-bottom:10px;">📋 نظام التعلم التفاعلي:</div>
+        <div style="color:#888;font-size:13px;line-height:2;">
+          • دروس تفاعلية مخصصة<br>
+          • اختبارات ذكية وتحديات<br>
+          • تتبع التقدم اليومي<br>
+          • شهادات إنجاز<br>
+          • نظام نقاط ومكافآت
+        </div>
+      </div>
+    `;
+  } else if(type === 'code'){
+    el.innerHTML = `
+      <h2>💻 مبرمج الأكواد</h2>
+      <p>صف ما تريد برمجته بالتفصيل:</p>
+      <textarea rows="5" placeholder="مثال: موقع تواصل اجتماعي بتصميم داكن..."></textarea>
+      <div class="code-langs">
+        <button onclick="selectLang(this)">HTML/CSS</button>
+        <button onclick="selectLang(this)">JavaScript</button>
+        <button onclick="selectLang(this)">Python</button>
+        <button onclick="selectLang(this)">React</button>
+      </div>
+      <button style="margin-top:8px;">⚡ توليد الكود</button>
+      <div style="margin-top:15px;color:#888;font-size:12px;">💡 يمكنك نسخ الكود بنقرة واحدة بعد التوليد</div>
+    `;
+  } else if(type === 'library'){
+    el.innerHTML = `
+      <h2>👹 مكتبة الوحوش</h2>
+      <p>اختر وحشاً لمعرفة قصته:</p>
+      <div class="monster-grid">
+        <div class="monster-card" onclick="showMonster('dragon')"><div class="icon">🐉</div><div class="name">التنين</div></div>
+        <div class="monster-card" onclick="showMonster('vampire')"><div class="icon">🧛</div><div class="name">مصاص الدماء</div></div>
+        <div class="monster-card" onclick="showMonster('ghost')"><div class="icon">👻</div><div class="name">الشبح</div></div>
+        <div class="monster-card" onclick="showMonster('zombie')"><div class="icon">🧟</div><div class="name">الزومبي</div></div>
+        <div class="monster-card" onclick="showMonster('cthulhu')"><div class="icon">🦑</div><div class="name">كثولو</div></div>
+        <div class="monster-card" onclick="showMonster('demon')"><div class="icon">👹</div><div class="name">الشيطان</div></div>
+        <div class="monster-card" onclick="showMonster('werewolf')"><div class="icon">🐺</div><div class="name">الذئب البشري</div></div>
+        <div class="monster-card" onclick="showMonster('kraken')"><div class="icon">🐙</div><div class="name">الكرaken</div></div>
+      </div>
+      <div id="monster-info" style="margin-top:20px;padding:15px;background:#1a1a2e;border-radius:12px;display:none;"></div>
+    `;
+  }
+}
+
+function selectLang(btn){
+  document.querySelectorAll('.code-langs button').forEach(b => b.style.borderColor = '#2a2a4a');
+  btn.style.borderColor = '#8a2be2';
+}
+
+function showMonster(name){
+  const info = document.getElementById('monster-info');
+  const data = {
+    dragon: { title: '🐉 التنين', desc: 'وحش أسطوري يتنفس النار! يوجد في أساطير الصين والعرب والإسكندنافيين. أقوى الوحوش على الإطلاق!' },
+    vampire: { title: '🧛 مصاص الدماء', desc: 'كائن ليلي يعيش على دم البشر! دراكولا هو أشهرهم. يخاف من الثوم وضوء الشمس.' },
+    ghost: { title: '👻 الشبح', desc: 'روح ميتة تتجول بين الأحياء! قد تكون انتقامية أو ضائعة. أشهرهم في قصص الرعب اليابانية.' },
+    zombie: { title: '🧟 الزومبي', desc: 'جثة متحركة تسعى لأكل الأدمغة! اشتهرت في أفلام الرعب الأمريكية وألعاب Resident Evil.' },
+    cthulhu: { title: '🦑 كثولو', desc: 'إله قديم من أعمال H.P. Lovecraft! كائن بحري عملاق يعيش في أعماق المحيط. مجرد رؤيته تُصيب بالجنون!' },
+    demon: { title: '👹 الشيطان', desc: 'كائنات من العالم الآخر! يختلفون في كل ثقافة. إبليس، لوسيفر، الشياطين في الإسلام والمسيحية.' },
+    werewolf: { title: '🐺 الذئب البشري', desc: 'إنسان يتحول إلى ذئب في ليلة البدر! أسطورة أوروبية قديمة. لا يمكن قتله إلا بالفضة.' },
+    kraken: { title: '🐙 الكرaken', desc: 'حبار بحري عملاق من الأساطير الإسكندنافية! يمكنه أن يغرق سفينة بأكملها بأذرعه الضخمة.' }
+  };
+  info.style.display = 'block';
+  info.innerHTML = `<div style="color:#8a2be2;font-weight:700;margin-bottom:8px;">${data[name].title}</div><div style="color:#ccc;font-size:13px;line-height:1.7;">${data[name].desc}</div>`;
+}
+
+// --- Chat Functions ---
+function addUserMsg(text){
+  const chat = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'msg-user';
+  div.innerHTML = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addSaraisMsg(text, isOwnerMsg=false, mood='normal'){
+  const chat = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'msg-sarais' + (isOwnerMsg ? ' owner' : '') + (mood==='angry'?' angry':'') + (mood==='happy'?' happy':'');
+  div.innerHTML = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping(){
+  const chat = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.id = 'typing-indicator';
+  div.className = 'typing-box';
+  div.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span><span id="typing-status" style="display:block;font-size:12px;color:#999;margin-top:6px;"></span>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  animateEyes('thinking');
+
+  const thinkingMessages = [
+    'يفكر... 🧠',
+    'يستحضر فكرة من الأبعاد المظلمة... 😈',
+    'يرتب أفكاره...',
+    'لا يزال يفكر، بعض الأفكار تحتاج وقتاً أطول... 🖤',
+    'يصقل الرد ليكون مثالياً...'
+  ];
+  let msgIndex = 0;
+  const statusEl = document.getElementById('typing-status');
+  if(statusEl) statusEl.textContent = thinkingMessages[0];
+  typingInterval = setInterval(() => {
+    msgIndex++;
     const el = document.getElementById('typing-status');
     if(el) el.textContent = thinkingMessages[msgIndex % thinkingMessages.length];
   }, 3500);
